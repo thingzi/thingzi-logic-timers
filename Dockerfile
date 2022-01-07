@@ -1,8 +1,8 @@
 FROM nodered/node-red:latest-minimal
 
-COPY ./src /nodes/src
+COPY ./node /nodes/node
 
 USER root
-RUN cd /usr/src/node-red && npm install /nodes/src
+RUN cd /usr/src/node-red && npm install /nodes/node
     
 USER node-red
