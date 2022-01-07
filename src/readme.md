@@ -13,6 +13,10 @@ Set events for a weekly schedule using a visual calendar.  Useful for schedules 
 
 ### Release Notes
 
+<b>1.1.6</b>
+
+- No code changes, updated package links for github
+
 <b>1.1.5</b>
 
 - Added extra output for time check node to handle time not in range
