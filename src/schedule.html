@@ -1,0 +1,272 @@
+<script type="text/javascript">
+    RED.nodes.registerType('thingzi-schedule', {
+        category: 'function',
+        color: '#9ccff5',
+        defaults: {
+            name: { value: "" },
+            events: { value: "[]" },
+            sendType: { value: 'msg' },
+            sendId: { value: 'payload', required: true },
+            onPayloadType: { value: "str" },
+            onPayload: { value: "ON", validate: RED.validators.typedInput("onPayloadType") },
+            offPayloadType: { value: "str" },
+            offPayload: { value: "OFF", validate: RED.validators.typedInput("offPayloadType") },
+            startupMessage: { value: true }
+        },
+        inputs: 1,
+        outputs: 1,
+        outputLabels: ["schedule event"],
+        icon: 'schedule.png',
+        label: function () {
+            return this.name || 'schedule';
+        },
+        paletteLabel: 'schedule',
+        oneditprepare: function () {
+            var node = this;
+
+            node.fromMoment = function (m) {
+                m = moment(m);
+                return {
+                    dow: m.day(),
+                    mod: m.hours() * 60 + m.minutes(),
+                };
+            };
+
+            node.toMoment = function (o) {
+                var day = o.dow == 0 ? 7 : o.dow;
+                var m = moment('2018-01-0' + day + ' 00:00:00');
+                m.hours(Math.floor(o.mod / 60));
+                m.minutes(o.mod % 60);
+                return m;
+            };
+
+            node.nextId = (function () {
+                var id = 0;
+                return function () {
+                    return id++;
+                };
+            })();
+
+            var setup = function (node) {
+                node.configuredEvents = [];
+                JSON.parse(node.events).forEach(function (e) {
+                    if (!(e.start != undefined && e.start.dow != undefined && e.start.mod != undefined))
+                        return;
+                    if (!(e.end != undefined && e.end.dow != undefined && e.end.mod != undefined))
+                        return;
+
+                    eventData = {
+                        id: node.nextId(),
+                        title: '',
+                        start: node.toMoment(e.start),
+                        end: node.toMoment(e.end),
+                        stick: true,
+                    };
+
+                    if (eventData.start.isAfter(eventData.end)) {
+                        // start is a sunday (which is moved from date 0 to 7)
+                        eventData.end.add(7, 'days');
+                    }
+
+                    node.configuredEvents.push(eventData);
+                });
+
+                $('#calendar').fullCalendar({
+                    timezone: false,
+                    defaultDate: moment('2018-01-01 00:00:00'),
+                    header: false,
+                    footer: false,
+                    firstDay: 1,
+                    allDaySlot: false,
+                    defaultView: 'agendaWeek',
+                    timeFormat: 'H:mm',
+                    slotLabelFormat: 'H:mm',
+                    columnFormat: 'ddd',
+                    duration: '00:15:00',
+                    snapDuration: '00:15:00',
+                    displayEventTime: false,
+                    selectOverlap: false,
+                    eventOverlap: false,
+                    selectable: true,
+                    editable: true,
+                    events: node.configuredEvents,
+                    select: function (start, end) {
+                        // Remove timezone
+                        start = node.toMoment(node.fromMoment(start));
+                        end = node.toMoment(node.fromMoment(end));
+
+                        var eventData = {
+                            id: node.nextId(),
+                            title: '',
+                            start: start,
+                            end: end,
+                            stick: true,
+                        };
+
+                        $('#calendar').fullCalendar('renderEvent', eventData, true);
+                        $('#calendar').fullCalendar('unselect');
+
+                        node.configuredEvents.push(eventData);
+                    },
+                    selectAllow: function (selectInfo) {
+                        var start = moment(selectInfo.start);
+                        var end = moment(selectInfo.end);
+                        if (start.isSame(end, 'day')) {
+                            return true;
+                        }
+                        if (start.add(1, 'day').startOf('day').isSame(end, 'minute')) {
+                            return true; // Next day but midnight
+                        }
+                        return false;
+                    },
+                    eventClick: function (event, jsEvent, view) {
+                        $('#calendar').fullCalendar('removeEvents', event._id);
+                        node.configuredEvents = node.configuredEvents.filter(function (e) {
+                            return event.id != e.id;
+                        });
+                    },
+                    eventResize: function (event, delta, revertFunc) {
+                        node.configuredEvents.forEach(function (e) {
+                            if (event.id == e.id) {
+                                e.end = moment(e.end).add(delta);
+                            }
+                        });
+                    },
+                    eventDrop: function (event, delta, revertFunc, jsEvent, ui, view) {
+                        node.configuredEvents.forEach(function (e) {
+                            if (event.id == e.id) {
+                                e.start = moment(e.start).add(delta);
+                                e.end = moment(e.end).add(delta);
+                            }
+                        });
+                    },
+                });
+
+                $("#node-input-sendId").typedInput({
+                    default: 'msg',
+                    typeField: $("#node-input-sendType"),
+                    types: ['msg', 'flow', 'global']
+                });
+
+                $("#node-input-onPayloadType").val(node.onPayloadType);
+                $("#node-input-onPayload").typedInput({
+                    default: 'str',
+                    typeField: $("#node-input-onPayloadType"),
+                    types: ['flow','global','str','num','bool','json','date']
+                });
+
+                $("#node-input-offPayloadType").val(node.offPayloadType);
+                $("#node-input-offPayload").typedInput({
+                    default: 'str',
+                    typeField: $("#node-input-offPayloadType"),
+                    types: ['flow','global','str','num','bool','json','date']
+                });
+            }
+
+            $.getScript('thingzi/schedule/moment.min.js')
+                .done(function (data, textStatus, jqxhr) {
+                    $.getScript('thingzi/schedule/fullcalendar.min.js')
+                        .done(function (data, textStatus, jqxhr) {
+                            setup(node);
+                        })
+                        .fail(function (jqxhr, settings, exception) {
+                            console.log("failed to load fullcalendar.min.js");
+                            console.log(exception);
+                            console.log(exception.stack);
+                        });
+                });
+        },
+        oneditsave: function () {
+            var node = this;
+
+            // Transform and store data
+            var events = node.configuredEvents.map(function (e) {
+                return {
+                    start: node.fromMoment(e.start),
+                    end: node.fromMoment(e.end),
+                };
+            });
+            node.events = JSON.stringify(events);
+            delete window.calendar;
+        },
+        oneditresize: function () {
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="thingzi-schedule">
+    <div class="form-row">
+        <label for="node-input-name" style="width: 100px"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <link rel='stylesheet' href='thingzi/schedule/fullcalendar.min.css' />
+        <style type="text/css">.wc-business-hours { font-size: 1.0em; }</style>
+        <div id="calendar" style="width: 100%; border: 1px solid grey"></div>
+        <div class="form-row">
+            <p style="padding-top: 10px">
+            <i class="fa fa-info-circle"></i> Marked Schedule = "On Value"</p>
+        </div>
+    </div>
+    <hr>
+    <h4>Output</h4>
+    <div class="form-row">
+        <label for="node-input-sendId">Send</label>
+        <input type="text" id="node-input-sendId" style="width: 70%"/>
+        <input type="hidden" id="node-input-sendType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-onPayload"><i class="fa fa-envelope"></i> On Value</label>
+        <input type="text" id="node-input-onPayload" placeholder="ON">
+        <input type="hidden" id="node-input-onPayloadType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-offPayload"><i class="fa fa-envelope"></i> Off Value</label>
+        <input type="text" id="node-input-offPayload" placeholder="OFF">
+        <input type="hidden" id="node-input-offPayloadType">
+    </div>
+    <div class="form-row">
+        <label style="margin-left: 100px; width: 70%">
+            <input type="checkbox" id="node-input-startupMessage" style="width: 20px; margin: 0">
+            <span id="node-input-startupMessageText">Send previous event on startup</span>
+        </label>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="thingzi-schedule">
+  <p>Set events for a weekly schedule using a visual calendar.</p>
+
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+      <dt class="optional">payload <span class="property-type">string</span></dt>
+      <dd> Enable or disable schedule events using <code>ON</code> or <code>OFF</code></dd>
+  </dl>
+
+  <h3>Outputs</h3>
+  <ol class="node-ports">
+      <li>Timer event
+          <dl class="message-properties">
+              <dt>payload <span class="property-type">string</span></dt>
+              <dd> User configured schedule event. <code>ON</code> or <code>OFF</code> by default.</dd>
+          </dl>
+      </li>
+  </ol>
+
+  <h3>Details</h3>
+  <p>Configure the schedule as required, once deployed the current state will be
+  shown in the status.</p>
+  
+  <p>Schedule periods can be created on any week day by clicking once on the calendar 
+  and can be resized or moved as required within the same day.  Clicking on an existing 
+  event will delete it. </p>
+  
+  <p>The <code>ON</code> event will be sent at the start of any period and the <code>OFF</code> 
+  event at the end.</p>
+
+  <p>This node can be enabled or disabled by sending it an <code>ON</code> or <code>OFF</code>
+  message via the input.  This is useful for schedules that may need an overide, e.g. 
+  controlling a thermostat.  When the schedule is active the status will show a solid dot 
+  and When inactive a ring.</p>
+
+  <p>Schedule events are accurate to within one minute.</p>
+</script>
