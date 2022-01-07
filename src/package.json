@@ -17,5 +17,9 @@
         "time-check": "time-check.js",
         "schedule": "schedule.js"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thingzi/thingzi-logic-timers.git"
   }
 }
