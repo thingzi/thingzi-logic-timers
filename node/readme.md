@@ -16,6 +16,10 @@ If you like/use this node, coffee makes me happy and it keeps me coding when i s
 <a href="https://www.buymeacoffee.com/thingzi" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 200px !important;" ></a>
 ### Release Notes
 
+<b>1.1.8</b>
+
+- Add an option to time check to forward messages as valid on unchecked days
+
 <b>1.1.7</b>
 
 - No code changes, updated package links for github

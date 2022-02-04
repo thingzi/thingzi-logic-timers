@@ -32,7 +32,10 @@
             thu: {value: true},
             fri: {value: true},
             sat: {value: true},
-            sun: {value: true}
+            sun: {value: true},
+
+            // Pass on unchecked days
+            passunchecked: {value: false},
         },
         inputs: 1,
         outputs: 2,
@@ -105,6 +108,12 @@
             <td><input type="checkbox" id="node-input-sun" placeholder="" style="width: 20px; margin: 0">Sun</td>
         </tr>
         </table>
+    </div>
+    <div class="form-row">
+        <label style="margin-left: 100px; width: 70%">
+            <input type="checkbox" id="node-input-passunchecked" style="width: 20px; margin: 0">
+            <span>Pass test on unchecked days</span>
+        </label>
     </div>
     <div class="form-row thingzi-geo">
 		<label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>

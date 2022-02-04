@@ -37,6 +37,7 @@ module.exports = function(RED) {
         var fmt = 'D MMM, HH:mm:ss';
         this.lat = config.lat;
         this.lon = config.lon;
+        this.passunchecked = config.passunchecked;
 
         // ON config
         this.ontype = config.ontype;
@@ -100,25 +101,23 @@ module.exports = function(RED) {
 
         // On input send the message
         this.on("input", function(msg, send, done) {
-            var now = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
+            let now = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
+            let check = false;
 
             // Is the day valid?
             if (!weekdays[now.isoWeekday() - 1]) {
-                 node.send([null, msg]);
-                 node.status({ fill: 'grey', shape: 'dot', text: `@ ${now.format(fmt)}` });
-                 done();
-                 return;
-            }
-            
-            var on = getEvent(node.ontype, node.onvalue, node.onoffset, node.onrandom);
-            var off = getEvent(node.offtype, node.offvalue, node.offoffset, node.offrandom);
-            var flipped = on.isAfter(off);
-            var check = false;
-
-            if (flipped) {
-                check = now.isAfter(on) || now.isBefore(off);
+                check = config.passunchecked === true;
             } else {
-                check = now.isAfter(on) && now.isBefore(off);
+                // Check the range
+                let on = getEvent(node.ontype, node.onvalue, node.onoffset, node.onrandom);
+                let off = getEvent(node.offtype, node.offvalue, node.offoffset, node.offrandom);
+                let flipped = on.isAfter(off);
+
+                if (flipped) {
+                    check = now.isAfter(on) || now.isBefore(off);
+                } else {
+                    check = now.isAfter(on) && now.isBefore(off);
+                }
             }
 
             if (check) {
