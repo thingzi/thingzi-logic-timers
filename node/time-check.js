@@ -71,17 +71,17 @@ module.exports = function(RED) {
 
                 // Validate time values
                 if (!isNaN(hours) && (hours < 0 || hours > 60)) {
-                    node.error('Invalid hours \'' + event.timetod + '\'');
+                    node.error('Invalid hours \'' + hours + '\'');
                 } else if (!isNaN(mins) && (mins < 0 || mins > 60)) {
-                    node.error('Invalid minutes \'' + event.timetod + '\'');
+                    node.error('Invalid minutes \'' + mins + '\'');
                 } else if (!isNaN(secs) && (secs < 0 || secs > 60)) {
-                    node.error('Invalid seconds \'' + event.timetod + '\'');
+                    node.error('Invalid seconds \'' + secs + '\'');
                 } else if (!isNaN(secs)) {
                     event = moment().set({hour:hours,minute:mins,second:secs,millisecond:0});
                 } else if (!isNaN(mins)) {
                     event = moment().set({hour:hours,minute:mins,second:0,millisecond:0});
                 } else {
-                    node.error('Invalid time \'' + event.timetod + '\'');
+                    node.error('Invalid time \'' + value + '\'');
                 }
             }
 
