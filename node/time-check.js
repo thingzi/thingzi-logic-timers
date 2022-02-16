@@ -114,9 +114,9 @@ module.exports = function(RED) {
                 let flipped = on.isAfter(off);
 
                 if (flipped) {
-                    check = now.isAfter(on) || now.isBefore(off);
+                    check = now.isSameOrAfter(on) || now.isBefore(off);
                 } else {
-                    check = now.isAfter(on) && now.isBefore(off);
+                    check = now.isSameOrAfter(on) && now.isBefore(off);
                 }
             }
 
