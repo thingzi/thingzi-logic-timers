@@ -15,13 +15,15 @@
             ontype: {value: 'tod'},
             ontimesun: {value: 'dusk'},
             ontimetod: {value: null},
+            ontimetodtype: {value: 'str'},
             onoffset: {value: null},
             onrandomoffset: {value: null},
-
+            
             // OFF config params
             offtype: {value: 'tod'},
             offtimesun: {value: 'dawn'},
             offtimetod: {value: null},
+            offtimetodtype: {value: 'str'},
             offoffset: {value: null},
             offrandomoffset: {value: null},
 
@@ -47,28 +49,36 @@
         paletteLabel: "time check",
         oneditprepare: function () {
 
+            var ontype = $('#node-input-ontype');
+            var ontimetod = $('#node-input-ontimetod');
+            var ontimetodtype = $('#node-input-ontimetodtype');
+            var offtype = $('#node-input-offtype');
+            var offtimetod = $('#node-input-offtimetod');
+            var offtimetodtype = $('#node-input-offtimetodtype');
+
+            if (!ontype.val()) {
+                ontype.val('tod')
+            }
+
+            if (!offtype.val()) {
+                offtype.val('tod')
+            }
+
+            if (!ontimetodtype.val()) {
+                ontimetodtype.val('str')
+            }
+
+            if (!offtimetodtype.val()) {
+                offtimetodtype.val('str')
+            }
+
+            // Get lat/long from API
             if (!$("#node-input-lat").val().trim() && !$("#node-input-lon").val().trim()) {
                 $.getJSON('thingzi/timer/location', function( data, status, xhr ) {
                     $("#node-input-lat").val(Number(data.latitude.toFixed(5)));
                     $("#node-input-lon").val(Number(data.longitude.toFixed(5)));
                 });
             }
-
-            $('#node-input-ontype').on('change', function(data) {
-                $('.thingzi-ontype').hide();
-                switch ($('#node-input-ontype').val()) {
-                    case "sun": $('.thingzi-ontype-sun').show(); break;
-                    case "tod": $('.thingzi-ontype-time').show(); break;
-                }
-            });
-
-            $('#node-input-offtype').on('change', function(data) {
-                $('.thingzi-offtype').hide();
-                switch ($('#node-input-offtype').val()) {
-                    case "sun": $('.thingzi-offtype-sun').show(); break;
-                    case "tod": $('.thingzi-offtype-time').show(); break;
-                }
-            });
 
             // Show/hide Geo fields
             $('.thingzi-geo-check').on('change', function(data) {
@@ -78,6 +88,36 @@
                     $('.thingzi-geo').hide();
                 }
             });
+
+            // ON
+            ontype.on('change', function(data) {
+                $('.thingzi-ontype').hide();
+                switch (ontype.val()) {
+                    case "sun": $('.thingzi-ontype-sun').show(); break;
+                    case "tod": $('.thingzi-ontype-tod').show(); break;
+                }
+            });
+
+            ontimetod.typedInput({
+                default: 'str',
+                typeField: ontimetodtype,
+                types:['str','flow','global']});
+            ontimetodtype.val(this.ontimetodtype);
+
+            // OFF
+            offtype.on('change', function(data) {
+                $('.thingzi-offtype').hide();
+                switch (offtype.val()) {
+                    case "sun": $('.thingzi-offtype-sun').show(); break;
+                    case "tod": $('.thingzi-offtype-tod').show(); break;
+                }
+            });
+
+            offtimetod.typedInput({
+                default: 'str',
+                typeField: offtimetodtype,
+                types:['str','flow','global']});
+            offtimetodtype.val(this.offtimetodtype);
         }
     });
 
@@ -96,7 +136,9 @@
         <input type="text" id="node-input-name" placeholder="name">
     </div>
     <div class="form-row">
-        <label for="node-input-lat"><i class="fa fa-calendar"></i> Schedule</label>
+        <label title="days to check, by default not ticked days will fail the check" for="node-input-lat"><i class="fa fa-calendar">
+            </i> Schedule
+        </label>
         <table style="display: inline-block; position: relative; top: 5px; left: -5px;">
         <tr>
             <td><input type="checkbox" id="node-input-mon" placeholder="" style="width: 20px; margin: 0">Mon</td>
@@ -110,7 +152,7 @@
         </table>
     </div>
     <div class="form-row">
-        <label style="margin-left: 100px; width: 70%">
+        <label title="if ticked, when a day is unchecked the test will always pass" style="margin-left: 100px; width: 70%">
             <input type="checkbox" id="node-input-passunchecked" style="width: 20px; margin: 0">
             <span>Pass test on unchecked days</span>
         </label>
@@ -147,15 +189,18 @@
                 <option value="sunset">Sunset</option>
             </select>
         </div>    
-        <div class="form-row thingzi-ontype thingzi-ontype-time">
-            <label for="node-input-ontimetod">Time (24hr)</label>
-            <input type="text" id="node-input-ontimetod" placeholder="HH:mm">
+        <div class="form-row thingzi-ontype thingzi-ontype-tod">
+            <label title="Simple time string e.g. HH::mm.  Can also value from flow or global context" for="node-input-ontimetod">
+                Time (HH:mm)
+            </label>
+            <input type="text" id="node-input-ontimetod" style="width: 70%"/>
+            <input type="hidden" id="node-input-ontimetodtype">
         </div>
-        <div class="form-row thingzi-ontype thingzi-ontype-sun thingzi-ontype-time">
+        <div class="form-row thingzi-ontype thingzi-ontype-sun thingzi-ontype-tod">
             <label for="node-input-onoffset">Offset (mins)</label>
             <input type="number" id="node-input-onoffset" placeholder="0">
         </div>
-        <div class="form-row thingzi-ontype thingzi-ontype-sun thingzi-ontype-time">
+        <div class="form-row thingzi-ontype thingzi-ontype-sun thingzi-ontype-tod">
             <label style="margin-left: 100px; width: 70%">
                 <input type="checkbox" id="node-input-onrandomoffset" placeholder="" style="width: 20px; margin: 0">
                 Randomise time within offset
@@ -186,15 +231,18 @@
                 <option value="sunset">Sunset</option>
             </select>
         </div>
-        <div class="form-row thingzi-offtype thingzi-offtype-time">
-            <label for="node-input-offtimetod">Time (24hr)</label>
-            <input type="text" id="node-input-offtimetod" placeholder="HH:mm">
+        <div class="form-row thingzi-offtype thingzi-offtype-tod">
+            <label title="Simple time string e.g. HH::mm.  Can also value from flow or global context" for="node-input-offtimetod">
+                Time (HH:mm)
+            </label>
+            <input type="text" id="node-input-offtimetod" style="width: 70%"/>
+            <input type="hidden" id="node-input-offtimetodtype">
         </div>
-        <div class="form-row thingzi-offtype thingzi-offtype-sun thingzi-offtype-time">
+        <div class="form-row thingzi-offtype thingzi-offtype-sun thingzi-offtype-tod">
             <label for="node-input-offoffset">Offset (mins)</label>
             <input type="number" id="node-input-offoffset" placeholder="0">
         </div>
-        <div class="form-row thingzi-offtype thingzi-offtype-sun thingzi-offtype-time">
+        <div class="form-row thingzi-offtype thingzi-offtype-sun thingzi-offtype-tod">
             <label style="margin-left: 100px; width: 70%">
                 <input type="checkbox" id="node-input-offrandomoffset" placeholder="" style="width: 20px; margin: 0">
                 Randomise time within offset
@@ -207,15 +255,22 @@
     <p>Test if the CURRENT time is within the set range.</p>
     <p>
         If the current time is in the valid range, the message is forwarded to the next node via the primary output.
-        if not then the message is sent via the secondary output.
+        if not then the message is sent via the secondary output.  The current time can also be overridden by supplying a 
+        timestamp via the 'time' topic.
     </p>
 
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt class="optional">payload <span class="property-type">string</span></dt>
         <dd> Any message, it will be forwarded depending on the pass/fail result</dd>
-        <dt class="optional">timestamp (optional) <span class="property-type">string</span></dt>
-        <dd> A timestamp to check against, if not set the current time now will be used.</dd>
+        <dt class="optional">time (optional) <span class="property-type">timestamp</span></dt>
+        <dd> A timestamp to check against instead of the current time, if not set the current time now will be used.</dd>
+        <dt class="optional">nowtime (optional) <span class="property-type">string</span></dt>
+        <dd> Simple time string to use instead of the current time e.g. HH:mm.</dd>
+        <dt class="optional">ontime (optional) <span class="property-type">string</span></dt>
+        <dd> Simple time string to use instead of the on time e.g. HH:mm.  Forced time of day mode for on</dd>
+        <dt class="optional">offtime (optional) <span class="property-type">string</span></dt>
+        <dd> Simple time string to use instead of the off time e.g. HH:mm.  Forced time of day mode for off</dd>
     </dl>
 
     <h3>Outputs</h3>
