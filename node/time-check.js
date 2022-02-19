@@ -72,11 +72,11 @@ module.exports = function(RED) {
             var secs = parts.length > 2 ? parseInt(parts[2]) : NaN;
 
             // Validate time values
-            if (!isNaN(hours) && (hours < 0 || hours > 60)) {
+            if (!isNaN(hours) && (hours < 0 || hours >= 24)) {
                 throw `Invalid hours '${hours}'`;
-            } else if (!isNaN(mins) && (mins < 0 || mins > 60)) {
+            } else if (!isNaN(mins) && (mins < 0 || mins >= 60)) {
                 throw `Invalid minutes '${mins}'`;
-            } else if (!isNaN(secs) && (secs < 0 || secs > 60)) {
+            } else if (!isNaN(secs) && (secs < 0 || secs >= 60)) {
                 throw `Invalid seconds '${secs}'`;
             } else if (!isNaN(secs)) {
                 return moment().set({hour:hours,minute:mins,second:secs,millisecond:0});
