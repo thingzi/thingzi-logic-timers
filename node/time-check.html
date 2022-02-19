@@ -253,11 +253,11 @@
 </script>
 
 <script type="text/html" data-help-name="thingzi-time-check">
-    <p>Test if the CURRENT or supplied time is within the given range.</p>
+    <p>Test if the current or supplied time is within the given range.</p>
     <p>
-        If the current time is in the valid range, the message is forwarded to the next node via the primary output.
-        if not then the message is sent via the secondary output.  The current time can also be overridden by supplying a 
-        timestamp via the 'time' topic.
+        If the time is within the range, the message is forwarded to the next node via the primary output.
+        if not then the message is sent via the secondary output.  The time to check can also be overridden 
+        by supplying a timestamp via the 'time' topic or a simple HH;mm string via the 'nowtime' topic.
     </p>
 
     <h3>Inputs</h3>
@@ -276,13 +276,13 @@
     <ol class="node-ports">
         <li>Check Passed
             <dl class="message-properties">
-                <dt>message <span class="property-type">string</span></dt>
+                <dt>msg object</dt>
                 <dd> Entire message that was sent to input (if time check passed).</dd>
             </dl>
         </li>
         <li>Check Failed
             <dl class="message-properties">
-                <dt>payload <span class="property-type">string</span></dt>
+                <dt>msg object</dt>
                 <dd> Entire message that was sent to input (if time check failed).</dd>
             </dl>
         </li>
