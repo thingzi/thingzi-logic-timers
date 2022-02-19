@@ -39,25 +39,27 @@ module.exports = function(RED) {
         this.lon = config.lon;
         this.passunchecked = config.passunchecked;
 
-        // ON config
-        this.ontype = config.ontype;
-        this.onvalue = config.ontype === 'sun' ? config.ontimesun : config.ontimetod;
-        this.onvaluetype = config.ontimetodtype || 'str';
-        this.onoffset = config.onoffset;
-        this.onrandom = config.onrandomoffset;
+        // START config
+        this.starttype = config.ontype;
+        this.startvalue = config.ontype === 'sun' ? config.ontimesun : config.ontimetod;
+        this.startvaluetype = config.ontimetodtype || 'str';
+        this.startoffset = config.onoffset;
+        this.startrandom = config.onrandomoffset;
 
-        // OFF config params
-        this.offtype = config.offtype;
-        this.offvalue = config.offtype === 'sun' ? config.offtimesun : config.offtimetod;
-        this.offvaluetype = config.offtimetodtype || 'str';
-        this.offoffset = config.offoffset;
-        this.offrandom = config.offrandomoffset;
+        // END config
+        this.endtype = config.offtype;
+        this.endvalue = config.offtype === 'sun' ? config.offtimesun : config.offtimetod;
+        this.endvaluetype = config.offtimetodtype || 'str';
+        this.endoffset = config.offoffset;
+        this.endrandom = config.offrandomoffset;
 
+        // Show error message on the node and the node red console log
         function setError(text) {
             node.error(text);
             node.status({ fill: 'red', shape: 'dot', text: text });
         }
 
+        // Parse a string of the format HH:mm:ss where seconds are optional
         function parseTime(value) {
             if (!value) {
                 throw 'Time not set';
@@ -138,52 +140,56 @@ module.exports = function(RED) {
 
         // On input send the message
         this.on("input", function(msg, send, done) {
+
+            // Message may override these so assign to defaults
+            let startType = node.starttype;
+            let startValue = node.startvalue;
+            let startValueType = node.startvaluetype;
+            let endType = node.endtype;
+            let endValue = node.endvalue;
+            let endValueType = node.endvaluetype;
+
             // Use time now or allow override with a timestamp
-            let now = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
-            let ontype = node.ontype;
-            let onvalue = node.onvalue;
-            let onvaluetype = node.onvaluetype;
-            let offtype = node.offtype;
-            let offvalue = node.offvalue;
-            let offvaluetype = node.offvaluetype;
+            let nowTime = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
 
             // Different way to override current time using HH:mm
             if (msg.hasOwnProperty('nowtime')) {
                 try {
-                    now = parseTime(msg.nowtime);
-                } catch (e) {
-                    setError(e);
+                    nowTime = parseTime(msg.nowtime);
+                } catch (error) {
+                    setError(`NOW: ${error}`);
                     done();
                     return;
                 }
             }
 
             // Is ontime in message using HH:mm
-            if (msg.hasOwnProperty('ontime')) {
-                ontype = 'tod';
-                onvalue = msg.ontime;
-                onvaluetype = 'str';
+            if (msg.hasOwnProperty('starttime')) {
+                startType = 'tod';
+                startValue = msg.ontime;
+                startValueType = 'str';
             }
 
             // Is offtime in message using HH:mm
-            if (msg.hasOwnProperty('offtime')) {
-                offtype = 'tod';
-                offvalue = msg.ontime;
-                offvaluetype = 'str';
+            if (msg.hasOwnProperty('endtime')) {
+                endType = 'tod';
+                endValue = msg.ontime;
+                endValueType = 'str';
             }
 
-            let passTest = false;
+            // Default to not passing check
+            let passCheck = false;
 
             // Is the day valid?
-            if (!weekdays[now.isoWeekday() - 1]) {
-                passTest = config.passunchecked === true;
+            if (!weekdays[nowTime.isoWeekday() - 1]) {
+                passCheck = config.passunchecked === true;
             } else {
                 // Check the range
-                let on = undefined;
-                let off = undefined;
+                let startTime = undefined;
+                let endTime = undefined;
                 
                 try {
-                    on = getEventTime(ontype, onvalue, onvaluetype, node.onoffset, node.onrandom);
+                    startTime = getEventTime(startType, startValue, startValueType, node.startoffset, node.startrandom);
                 } catch (error) {
                     setError(`ON: ${error}`);
                     done();
@@ -191,27 +197,27 @@ module.exports = function(RED) {
                 }
 
                 try {
-                    off = getEventTime(offtype, offvalue, offvaluetype, node.offoffset, node.offrandom);
+                    endTime = getEventTime(endType, endValue, endValueType, node.endoffset, node.endrandom);
                 } catch (error) {
                     setError(`OFF: ${error}`);
                     done();
                     return;
                 }
 
-                let flipped = on.isAfter(off);
+                let flipped = startTime.isAfter(endTime);
                 if (flipped) {
-                    passTest = now.isSameOrAfter(on) || now.isBefore(off);
+                    passCheck = nowTime.isSameOrAfter(startTime) || nowTime.isBefore(endTime);
                 } else {
-                    passTest = now.isSameOrAfter(on) && now.isBefore(off);
+                    passCheck = nowTime.isSameOrAfter(startTime) && nowTime.isBefore(endTime);
                 }
             }
 
-            if (passTest) {
+            if (passCheck) {
                 node.send([msg, null]);
-                node.status({ fill: 'green', shape: 'dot', text: `@ ${now.format(fmt)}` });
+                node.status({ fill: 'green', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
             } else {
                 node.send([null, msg]);
-                node.status({ fill: 'grey', shape: 'dot', text: `@ ${now.format(fmt)}` });
+                node.status({ fill: 'grey', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
             }
             done();
         });
