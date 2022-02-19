@@ -39,93 +39,185 @@ module.exports = function(RED) {
         this.lon = config.lon;
         this.passunchecked = config.passunchecked;
 
-        // ON config
-        this.ontype = config.ontype;
-        this.onvalue = config.ontype === 'sun' ? config.ontimesun : config.ontimetod;
-        this.onoffset = config.onoffset;
-        this.onrandom = config.onrandomoffset;
+        // START config
+        this.starttype = config.ontype;
+        this.startvalue = config.ontype === 'sun' ? config.ontimesun : config.ontimetod;
+        this.startvaluetype = config.ontimetodtype || 'str';
+        this.startoffset = config.onoffset;
+        this.startrandom = config.onrandomoffset;
 
-        // OFF config params
-        this.offtype = config.offtype;
-        this.offvalue = config.offtype === 'sun' ? config.offtimesun : config.offtimetod;
-        this.offoffset = config.offoffset;
-        this.offrandom = config.offrandomoffset;
+        // END config
+        this.endtype = config.offtype;
+        this.endvalue = config.offtype === 'sun' ? config.offtimesun : config.offtimetod;
+        this.endvaluetype = config.offtimetodtype || 'str';
+        this.endoffset = config.offoffset;
+        this.endrandom = config.offrandomoffset;
 
-        // Create an event
-        function getEvent(type, value, offset, random) {
-            var event = null;
+        // Show error message on the node and the node red console log
+        function setError(text) {
+            node.error(text);
+            node.status({ fill: 'red', shape: 'dot', text: text });
+        }
+
+        // Parse a string of the format HH:mm:ss where seconds are optional
+        function parseTime(value) {
+            if (!value) {
+                throw 'Time not set';
+            }
+
+            // Parse time of day and store using server time zone
+            var parts = value.split(':');
+            var hours = parts.length > 0 ? parseInt(parts[0]) : NaN;
+            var mins = parts.length > 1 ? parseInt(parts[1]) : NaN;
+            var secs = parts.length > 2 ? parseInt(parts[2]) : NaN;
+
+            // Validate time values
+            if (!isNaN(hours) && (hours < 0 || hours >= 24)) {
+                throw `Invalid hours '${hours}'`;
+            } else if (!isNaN(mins) && (mins < 0 || mins >= 60)) {
+                throw `Invalid minutes '${mins}'`;
+            } else if (!isNaN(secs) && (secs < 0 || secs >= 60)) {
+                throw `Invalid seconds '${secs}'`;
+            } else if (!isNaN(secs)) {
+                return moment().set({hour:hours,minute:mins,second:secs,millisecond:0});
+            } else if (!isNaN(mins)) {
+                return moment().set({hour:hours,minute:mins,second:0,millisecond:0});
+            }
+
+            throw `Invalid time '${value}'`;
+        }
+
+        // Get the event time
+        function getEventTime(type, value, valuetype, offset, random) {
+            if (!value) {
+                return undefined;
+            }
+
+            var eventTime = undefined;
             if (type === 'sun') {
                 const sunCalcTimes = suncalc.getTimes(new Date(), node.lat, node.lon);
                 var sc = sunCalcTimes[sunTimes[sunTimes.indexOf(value)]];
                 if (sc && moment(sc).isValid()) {
-                    event = moment(sc);
+                    eventTime = moment(sc);
                 } else {
-                    node.error('Unable to determine time for \'' + value + '\'');
+                    throw `Sun calc error '${value}'`;
                 }
-            } else {
-                // Parse time of day and store using server time zone
-                var parts = value.split(':');
-                var hours = parts.length > 0 ? parseInt(parts[0]) : NaN;
-                var mins = parts.length > 1 ? parseInt(parts[1]) : NaN;
-                var secs = parts.length > 2 ? parseInt(parts[2]) : NaN;
-
-                // Validate time values
-                if (!isNaN(hours) && (hours < 0 || hours > 60)) {
-                    node.error('Invalid hours \'' + hours + '\'');
-                } else if (!isNaN(mins) && (mins < 0 || mins > 60)) {
-                    node.error('Invalid minutes \'' + mins + '\'');
-                } else if (!isNaN(secs) && (secs < 0 || secs > 60)) {
-                    node.error('Invalid seconds \'' + secs + '\'');
-                } else if (!isNaN(secs)) {
-                    event = moment().set({hour:hours,minute:mins,second:secs,millisecond:0});
-                } else if (!isNaN(mins)) {
-                    event = moment().set({hour:hours,minute:mins,second:0,millisecond:0});
-                } else {
-                    node.error('Invalid time \'' + value + '\'');
+            } else if (type === 'tod') {
+                switch(valuetype) {
+                    case 'str':
+                        eventTime = parseTime(value); 
+                        break;
+                    case 'flow': 
+                        let fvalue = node.context().flow.get(value);
+                        if (!fvalue) {
+                            throw `flow.${value} not found`;
+                        }
+                        eventTime = parseTime(fvalue); 
+                        break;
+                    case 'global': 
+                        let gvalue = node.context().global.get(value);
+                        if (!gvalue) {
+                            throw `global.${value} not found`;
+                        }
+                        eventTime = parseTime(gvalue); 
+                        break;
                 }
             }
 
-            if (event) {
+            if (eventTime) {
                 // Add the offset with random element (must be last to avoid multiple triggers for same period)
                 if (offset) {
                     let adjustment = offset;
                     if (random) {
                         adjustment = offset * Math.random();
                     }
-                    event.add(adjustment, 'minutes');
+                    eventTime.add(adjustment, 'minutes');
                 }
             }
 
-            return event;
+            return eventTime;
         }
 
         // On input send the message
         this.on("input", function(msg, send, done) {
-            let now = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
-            let check = false;
 
-            // Is the day valid?
-            if (!weekdays[now.isoWeekday() - 1]) {
-                check = config.passunchecked === true;
-            } else {
-                // Check the range
-                let on = getEvent(node.ontype, node.onvalue, node.onoffset, node.onrandom);
-                let off = getEvent(node.offtype, node.offvalue, node.offoffset, node.offrandom);
-                let flipped = on.isAfter(off);
+            // Message may override these so assign to defaults
+            let startType = node.starttype;
+            let startValue = node.startvalue;
+            let startValueType = node.startvaluetype;
+            let endType = node.endtype;
+            let endValue = node.endvalue;
+            let endValueType = node.endvaluetype;
 
-                if (flipped) {
-                    check = now.isSameOrAfter(on) || now.isBefore(off);
-                } else {
-                    check = now.isSameOrAfter(on) && now.isBefore(off);
+            // Use time now or allow override with a timestamp
+            let nowTime = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
+
+            // Different way to override current time using HH:mm
+            if (msg.hasOwnProperty('nowtime')) {
+                try {
+                    nowTime = parseTime(msg.nowtime);
+                } catch (error) {
+                    setError(`NOW: ${error}`);
+                    done();
+                    return;
                 }
             }
 
-            if (check) {
+            // Is ontime in message using HH:mm
+            if (msg.hasOwnProperty('starttime')) {
+                startType = 'tod';
+                startValue = msg.ontime;
+                startValueType = 'str';
+            }
+
+            // Is offtime in message using HH:mm
+            if (msg.hasOwnProperty('endtime')) {
+                endType = 'tod';
+                endValue = msg.ontime;
+                endValueType = 'str';
+            }
+
+            // Default to not passing check
+            let passCheck = false;
+
+            // Is the day valid?
+            if (!weekdays[nowTime.isoWeekday() - 1]) {
+                passCheck = config.passunchecked === true;
+            } else {
+                // Check the range
+                let startTime = undefined;
+                let endTime = undefined;
+                
+                try {
+                    startTime = getEventTime(startType, startValue, startValueType, node.startoffset, node.startrandom);
+                } catch (error) {
+                    setError(`ON: ${error}`);
+                    done();
+                    return;
+                }
+
+                try {
+                    endTime = getEventTime(endType, endValue, endValueType, node.endoffset, node.endrandom);
+                } catch (error) {
+                    setError(`OFF: ${error}`);
+                    done();
+                    return;
+                }
+
+                let flipped = startTime.isAfter(endTime);
+                if (flipped) {
+                    passCheck = nowTime.isSameOrAfter(startTime) || nowTime.isBefore(endTime);
+                } else {
+                    passCheck = nowTime.isSameOrAfter(startTime) && nowTime.isBefore(endTime);
+                }
+            }
+
+            if (passCheck) {
                 node.send([msg, null]);
-                node.status({ fill: 'green', shape: 'dot', text: `@ ${now.format(fmt)}` });
+                node.status({ fill: 'green', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
             } else {
                 node.send([null, msg]);
-                node.status({ fill: 'grey', shape: 'dot', text: `@ ${now.format(fmt)}` });
+                node.status({ fill: 'grey', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
             }
             done();
         });
