@@ -53,8 +53,8 @@ module.exports = function(RED) {
             event.state = (eventName === 'on');
             event.last = { moment: null };
             event.statusCallback = statusCallback;
-            event.offset = Math.max(-60, event.offset);
-            event.offset = Math.min(60, event.offset);
+            event.offset = Math.max(-180, event.offset);
+            event.offset = Math.min(180, event.offset);
 
             // Callback for the event trigger
             event.timerCallback = function() {
@@ -151,11 +151,11 @@ module.exports = function(RED) {
                     let secs = parts.length > 2 ? parseInt(parts[2]) : NaN;
 
                     // Validate time values
-                    if (!isNaN(hours) && (hours < 0 || hours > 60)) {
+                    if (!isNaN(hours) && (hours < 0 || hours >= 24)) {
                         event.error = 'Invalid hours \'' + event.timetod + '\'';
-                    } else if (!isNaN(mins) && (mins < 0 || mins > 60)) {
+                    } else if (!isNaN(mins) && (mins < 0 || mins >= 60)) {
                         event.error = 'Invalid minutes \'' + event.timetod + '\'';
-                    } else if (!isNaN(secs) && (secs < 0 || secs > 60)) {
+                    } else if (!isNaN(secs) && (secs < 0 || secs >= 60)) {
                         event.error = 'Invalid seconds \'' + event.timetod + '\'';
                     } else if (!isNaN(secs)) {
                         event.moment = moment(date).set({hour:hours,minute:mins,second:secs,millisecond:0});
@@ -191,15 +191,22 @@ module.exports = function(RED) {
 
                 // Adjust to next valid day if event in the past
                 let now = moment();
-                if (moment(now).isAfter(event.moment)) {
+                if (now.isSameOrAfter(event.moment)) {
                     date = date.add(1, 'days');
                     if (!event.calculateTime(getNextDate(date))) {
                         return;
                     }
                 }
 
-                // Add random offset
+                // Add random offset & handle case where new time is still within the offset
                 if (event.offset && event.randomoffset) {
+                    let baseTime = moment(event.moment).subtract(event.offset, 'minutes');
+                    if (now.isSameOrAfter(baseTime)) {
+                        date = date.add(1, 'days');
+                        if (!event.calculateTime(getNextDate(date))) {
+                            return;
+                        }
+                    }
                     event.moment.subtract(event.offset * Math.random(), 'minutes');
                 }
 
@@ -257,7 +264,10 @@ module.exports = function(RED) {
         function getNextDate(date) {
             // Check for at least one weekday to protect against infinite loop
             let hasWeekday = false;
-            for(let i=0; i<7; ++i) { hasWeekday |= weekdays[i]; }
+            for(let i=0; i<7; ++i) { 
+                hasWeekday |= weekdays[i];
+            }
+
             if (!hasWeekday) {
                 return null;
             }
