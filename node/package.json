@@ -7,7 +7,7 @@
     "lodash": "^4.17.10",
     "moment": "^2.22.1",
     "suncalc": "^1.8.0",
-    "request": "^2.88.2"
+    "needle": "^3.0.0"
   },
   "keywords": [ "node-red", "timer", "schedule", "time", "calendar", "trigger" ],
   "author": "Bryan Black <bry@bryzi.net>",
