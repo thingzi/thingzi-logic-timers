@@ -2,7 +2,7 @@ module.exports = function(RED) {
     'use strict';
 
     const moment = require('moment');
-    const request = require('request');
+    const needle = require('needle');
     const suncalc = require('suncalc');
     const lodash = require('lodash');
     const sunTimes = [
@@ -337,10 +337,7 @@ module.exports = function(RED) {
 
     // Rough location
     RED.httpAdmin.get('/thingzi/timer/location', RED.auth.needsPermission('thingzi.read'), function(req,res) {
-        request.get({
-            url: 'https://www.iplocate.io/api/lookup',
-            json: true
-        }, (err, result, data) => {
+        needle.get('https://www.iplocate.io/api/lookup', (err, result, data) => {
             if (err) {
                 console.log('thingZi error: Could not fetch location, ', err);
                 res.sendStatus(503);
