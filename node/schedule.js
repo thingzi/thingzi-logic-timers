@@ -75,16 +75,16 @@ module.exports = function (RED) {
         this.getValue = function(type, value) {
             switch (type) {
                 case 'flow':
-                    tgtValue = node.context().flow.get(value);
+                    value = node.context().flow.get(value);
                     break;
                 case 'global':
-                    tgtValue = node.context().global.get(value);
+                    value = node.context().global.get(value);
                     break;
                 case 'json':
-                    tgtValue = JSON.parse(value);
+                    value = JSON.parse(value);
                     break;
                 case 'bool':
-                    tgtValue = (value === "true");
+                    value = (value === "true");
                     break;
                 case 'date':
                     value = (new Date()).getTime();
