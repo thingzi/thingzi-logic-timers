@@ -11,7 +11,8 @@
             onPayload: { value: "ON", validate: RED.validators.typedInput("onPayloadType") },
             offPayloadType: { value: "str" },
             offPayload: { value: "OFF", validate: RED.validators.typedInput("offPayloadType") },
-            startupMessage: { value: true }
+            startupMessage: { value: true },
+            sendOnEnable: { value: true }
         },
         inputs: 1,
         outputs: 1,
@@ -228,7 +229,13 @@
     <div class="form-row">
         <label style="margin-left: 100px; width: 70%">
             <input type="checkbox" id="node-input-startupMessage" style="width: 20px; margin: 0">
-            <span id="node-input-startupMessageText">Send previous event on startup</span>
+            <span>Send previous event on startup</span>
+        </label>
+    </div>
+    <div class="form-row">
+        <label style="margin-left: 100px; width: 70%">
+            <input type="checkbox" id="node-input-sendOnEnable" style="width: 20px; margin: 0">
+            <span>Always send event on enable/disable</span>
         </label>
     </div>
 </script>

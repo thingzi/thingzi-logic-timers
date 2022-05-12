@@ -19,6 +19,7 @@ module.exports = function (RED) {
         this.scheduleEnabled = true;
         this.state = null;
         this.ignoreFirstSend = !config.startupMessage;
+        this.sendOnEnable = config.sendOnEnable;
 
         // Get the current state
         this.getState = function () {
@@ -97,8 +98,9 @@ module.exports = function (RED) {
         };
 
         // Check for new state
-        this.update = function() {
+        this.update = function(alwaysSend = false) {
             var newState = node.scheduleEnabled ? node.getState() : false;
+            var sendMessage = alwaysSend;
 
             // Has the state changed
             if (newState != node.state) {
@@ -106,7 +108,11 @@ module.exports = function (RED) {
                     node.log(`Change state from ${node.state} to ${newState}`);
                 }
                 node.state = newState;
+                sendMessage = true;
+            }
 
+            // Message to send?
+            if (sendMessage) {
                 // Get the message payload
                 if (node.state) {
                     node.sendMessage(node.getValue(node.onPayloadType, node.onPayload));
@@ -128,7 +134,7 @@ module.exports = function (RED) {
             var value = msg.hasOwnProperty('payload') ? msg.payload.toString() : null;
             if (value) {
                 node.scheduleEnabled = value === 'ON';
-                node.update();
+                node.update(node.sendOnEnable);
             }
             done();
         });
