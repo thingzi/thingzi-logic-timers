@@ -163,17 +163,17 @@ module.exports = function(RED) {
                 }
             }
 
-            // Is ontime in message using HH:mm
+            // Is starttime in message using HH:mm
             if (msg.hasOwnProperty('starttime')) {
                 startType = 'tod';
-                startValue = msg.ontime;
+                startValue = msg.starttime;
                 startValueType = 'str';
             }
 
-            // Is offtime in message using HH:mm
+            // Is endtime in message using HH:mm
             if (msg.hasOwnProperty('endtime')) {
                 endType = 'tod';
-                endValue = msg.ontime;
+                endValue = msg.endtime;
                 endValueType = 'str';
             }
 
