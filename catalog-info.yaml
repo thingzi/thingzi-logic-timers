@@ -7,5 +7,5 @@ metadata:
     github.com/project-slug: thingzi/thingzi-logic-timers
 spec:
   type: nodered
-  lifecyclnoderede: production
+  lifecycle: production
   owner: nodered
