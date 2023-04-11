@@ -2,9 +2,10 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: thingzi-logic-timers
+  description: Time based nodered nodes
   annotations:
     github.com/project-slug: thingzi/thingzi-logic-timers
 spec:
-  type: other
-  lifecycle: unknown
+  type: nodered
+  lifecyclnoderede: production
   owner: nodered
