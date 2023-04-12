@@ -2,9 +2,13 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: thingzi-logic-timers
-  description: Time based nodered nodes
+  description: Time based node red nodes (timer, schedule & time check)
   annotations:
     github.com/project-slug: thingzi/thingzi-logic-timers
+  links:
+    - url: https://flows.nodered.org/node/thingzi-logic-timers
+      title: View in NodeRed flows
+      icon: flowsheet
 spec:
   type: nodered
   lifecycle: production
