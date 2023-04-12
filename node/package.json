@@ -10,7 +10,7 @@
     "needle": "^3.0.0"
   },
   "keywords": [ "node-red", "timer", "schedule", "time", "calendar", "trigger" ],
-  "author": "Bryan Black <bry@bryzi.net>",
+  "author": "Bryan Black <bry@thingzi.net>",
   "license": "MIT",
   "node-red" : {
     "version": ">=1.0.0",
