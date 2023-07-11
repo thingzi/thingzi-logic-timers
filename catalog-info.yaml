@@ -2,6 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: thingzi-logic-timers
+  title: thingZi Logic Timers
   description: Time based node red nodes (timer, schedule & time check)
   annotations:
     github.com/project-slug: thingzi/thingzi-logic-timers
