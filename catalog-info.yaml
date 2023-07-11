@@ -5,6 +5,7 @@ metadata:
   description: Time based node red nodes (timer, schedule & time check)
   annotations:
     github.com/project-slug: thingzi/thingzi-logic-timers
+    backstage.io/techdocs-ref: dir:.
   links:
     - url: https://flows.nodered.org/node/thingzi-logic-timers
       title: View in NodeRed flows
