@@ -68,7 +68,7 @@
         paletteLabel: "activity",
         oneditprepare: function () {
             var updateGeo = function() {
-                if ($('#node-input-limitactivity').val() && ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun')) {
+                if ($('#node-input-limitactivity').prop("checked") && ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun')) {
                     $('.thingzi-geo').show();
                 } else {
                     $('.thingzi-geo').hide();
