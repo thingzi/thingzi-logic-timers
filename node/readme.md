@@ -5,15 +5,23 @@ Despite the large number of timer nodes available for node red i never found one
 ### Timer Node
 Daily on/off timer node that supports fixed times of the day or sun events.  Useful for setting timers such as lights that go on when its dark and off of at a fixed time.
 
+![example usage](https://raw.githubusercontent.com/thingzi/thingzi-logic-timers/1.4.0/docs/images/timer.png)
+
 ### Time Check Node
 Time check node for testing if a time (default current time) is within the set range including sun events. The original message is forwarded to different outputs based on pass/fail.
+
+![example usage](https://raw.githubusercontent.com/thingzi/thingzi-logic-timers/1.4.0/docs/images/time-check.png)
 
 ### Schedule Node
 Set events for a weekly schedule using a visual calendar.  Useful for schedules such as heating where you have a morning time, evening time and these may vary at the weekend.
 
+![example usage](https://raw.githubusercontent.com/thingzi/thingzi-logic-timers/1.4.0/docs/images/schedule.png)
+
 ### Activity Node
 Handle time based activity events with timeouts and extensions.  Useful for controlling lights based on motion
 or similar.
+
+![example usage](https://raw.githubusercontent.com/thingzi/thingzi-logic-timers/1.4.0/docs/images/activity.png)
 
 If you like/use this node, coffee makes me happy and it keeps me coding when i should be sleeping...
 
