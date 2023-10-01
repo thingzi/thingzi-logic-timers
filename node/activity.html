@@ -67,6 +67,21 @@
         },
         paletteLabel: "activity",
         oneditprepare: function () {
+            var updateGeo = function() {
+                if ($('#node-input-limitactivity').val() && ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun')) {
+                    $('.thingzi-geo').show();
+                } else {
+                    $('.thingzi-geo').hide();
+                }
+            }
+
+            var updateLimit = function() {
+                if ($('#node-input-limitactivity').prop("checked")) {
+                    $('.thingzi-limitactivity').show()
+                } else {
+                    $('.thingzi-limitactivity').hide()
+                }
+            }
 
             // TRIGGER
             $("#node-input-triggervaluetype").val(this.triggervaluetype ?? 'str');
@@ -153,22 +168,6 @@
         }
     });
 
-    var updateGeo = function() {
-        if ($('#node-input-limitactivity').val() && ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun')) {
-            $('.thingzi-geo').show();
-        } else {
-            $('.thingzi-geo').hide();
-        }
-    }
-
-    var updateLimit = function() {
-        if ($('#node-input-limitactivity').prop("checked")) {
-            $('.thingzi-limitactivity').show()
-        } else {
-            $('.thingzi-limitactivity').hide()
-        }
-    }
-
     var latLonValidator = function(node, v){
         if (node.ontype === 'sun' || node.offtype === 'sun') {
             return (node.lat.length > 0 && !isNaN(node.lat) && node.lon.length > 0 && !isNaN(node.lon));
@@ -184,7 +183,7 @@
         <input type="text" id="node-input-name" placeholder="name">
     </div>
     <div class="form-row">
-        <label for="node-input-timerduration">Timer (seconds)</label>
+        <label for="node-input-timerduration">Timer (secs)</label>
         <input type="number" id="node-input-timerduration">
     </div>
     <div class="form-row">
@@ -225,14 +224,6 @@
             <input type="checkbox" id="node-input-passunchecked" style="width: 20px; margin: 0">
             <span>Ignore time range on unchecked days</span>
         </label>
-    </div>
-    <div class="form-row thingzi-geo">
-		<label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
-		<input type="text" id="node-input-lat" placeholder="51.025">
-	</div>
-	<div class="form-row thingzi-geo">
-		<label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
-		<input type="text" id="node-input-lon" placeholder="-1.4">
     </div>
     <div class="thingzi-limitactivity">
         <hr>
@@ -318,6 +309,18 @@
             </label>
         </div>
     </div>
+    <div class="thingzi-geo">
+        <hr>
+        <h4>Sun Events</h4>
+        <div class="form-row">
+            <label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
+            <input type="text" id="node-input-lat" placeholder="51.025">
+        </div>
+        <div class="form-row">
+            <label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
+            <input type="text" id="node-input-lon" placeholder="-1.4">
+        </div>
+    </div>
 </script>
 
 <script type="text/html" data-help-name="thingzi-activity">
@@ -327,6 +330,8 @@
     <dl class="message-properties">
         <dt class="optional">payload <span class="property-type">string</span></dt>
         <dd> Message that triggers the activity.  Must match the value set in the node properties.</dd>
+        <dt class="optional">disable <span class="property-type">string</span></dt>
+        <dd> Disable the activity, even when in progress, can be <code>ON</code> or <code>OFF</code>. Useful if you need to override behaviour e.g. via a switch</dd>
         <dt class="optional">starttime (optional) <span class="property-type">string</span></dt>
         <dd> Simple time string to use instead of the start time e.g. HH:mm.  This forces "time of day" mode for the start time</dd>
         <dt class="optional">endtime (optional) <span class="property-type">string</span></dt>

@@ -57,6 +57,16 @@
         },
         paletteLabel: "timer",
         oneditprepare: function () {
+            var updateGeo = function() {
+                if ($('#node-input-ontype').val() === 'sun' || ($('#node-input-timerType').val() === 'onoff' && $('#node-input-offtype').val() === 'sun')) {
+                    $('.thingzi-geo').show();
+                    console.log("SHOW");
+                } else {
+                    $('.thingzi-geo').hide();
+                    console.log("HIDE");
+                }
+            }
+
             var atLoad = {
                 "type": $('#node-input-timerType').val(),
                 "startupMessage": $('#node-input-startupMessage').prop("checked")
@@ -149,16 +159,8 @@
         }
     });
 
-    var updateGeo = function() {
-        if ($('#node-input-ontype').val() === 'sun' || ($('#node-input-timerType').val() === 'onoff' && $('#node-input-offtype').val() === 'sun')) {
-            $('.thingzi-geo').show();
-        } else {
-            $('.thingzi-geo').hide();
-        }
-    }
-
     var latLonValidator = function(node, v){
-        if (node.ontype === 'sun' || (node.timerType === 'onoff' && node.offtype === 'sun')) {
+        if (node.ontype === 'sun' || node.offtype === 'sun') {
             return (node.lat.length > 0 && !isNaN(node.lat) && node.lon.length > 0 && !isNaN(node.lon));
         } else {
             return true;
@@ -191,14 +193,6 @@
             <td><input type="checkbox" id="node-input-sun" placeholder="" style="width: 20px; margin: 0">Sun</td>
         </tr>
         </table>
-    </div>
-    <div class="form-row thingzi-geo">
-		<label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
-		<input type="text" id="node-input-lat" placeholder="51.025">
-	</div>
-	<div class="form-row thingzi-geo">
-		<label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
-		<input type="text" id="node-input-lon" placeholder="-1.4">
     </div>
     <div class="form-row">
         <label style="margin-left: 100px; width: 70%">
@@ -303,6 +297,18 @@
             <label for="node-input-offvalue">Value</label>
             <input type="text" id="node-input-offvalue" style="width:70%">
             <input type="hidden" id="node-input-offvaluetype">
+        </div>
+    </div>
+    <div class="thingzi-geo">
+        <hr>
+        <h4>Sun Events</h4>
+        <div class="form-row">
+            <label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
+            <input type="text" id="node-input-lat" placeholder="51.025">
+        </div>
+        <div class="form-row">
+            <label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
+            <input type="text" id="node-input-lon" placeholder="-1.4">
         </div>
     </div>
 </script>

@@ -60,6 +60,9 @@ module.exports = function(RED) {
         // Timer
         this.timer = null;
 
+        // Disable override
+        this.disabled = false;
+
         // Show error message on the node and the node red console log
         function setError(text) {
             node.error(text);
@@ -155,6 +158,25 @@ module.exports = function(RED) {
             let endType = node.endtype;
             let endValue = node.endvalue;
             let endValueType = node.endvaluetype;
+
+            // Handle disabled
+            if (msg.hasOwnProperty('disable')) {
+                node.disabled = msg.disable.toString() === 'ON';
+                if (node.disabled) {
+                    if (node.extendtimer) {
+                        clearTimeout(node.timer);
+                        node.timer = null;
+                    }
+                    node.status({ fill: 'grey', shape: 'dot', text: 'disabled' });
+                } else {
+                    node.status({});
+                }
+            }
+
+            if (node.disabled) {
+                done();
+                return;
+            }
 
             // Use time now or allow override with a timestamp
             let nowTime = moment();

@@ -52,6 +52,21 @@
         },
         paletteLabel: "time check",
         oneditprepare: function () {
+            var updateGeo = function() {
+                if ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun') {
+                    $('.thingzi-geo').show();
+                } else {
+                    $('.thingzi-geo').hide();
+                }
+            }
+
+            var latLonValidator = function(node, v){
+                if (node.ontype === 'sun' || node.offtype === 'sun') {
+                    return (node.lat.length > 0 && !isNaN(node.lat) && node.lon.length > 0 && !isNaN(node.lon));
+                } else {
+                    return true;
+                }
+            }
 
             // START
             var startType = $('#node-input-ontype');
@@ -122,22 +137,6 @@
             });
         }
     });
-
-    var updateGeo = function() {
-        if ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun') {
-            $('.thingzi-geo').show();
-        } else {
-            $('.thingzi-geo').hide();
-        }
-    }
-
-    var latLonValidator = function(node, v){
-        if (node.ontype === 'sun' || node.offtype === 'sun') {
-            return (node.lat.length > 0 && !isNaN(node.lat) && node.lon.length > 0 && !isNaN(node.lon));
-        } else {
-            return true;
-        }
-    }
 </script>
 
 <script type="text/html" data-template-name="thingzi-time-check">
@@ -166,14 +165,6 @@
             <input type="checkbox" id="node-input-passunchecked" style="width: 20px; margin: 0">
             <span>Pass test on unchecked days</span>
         </label>
-    </div>
-    <div class="form-row thingzi-geo">
-		<label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
-		<input type="text" id="node-input-lat" placeholder="51.025">
-	</div>
-	<div class="form-row thingzi-geo">
-		<label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
-		<input type="text" id="node-input-lon" placeholder="-1.4">
     </div>
     <div>
         <hr>
@@ -257,6 +248,18 @@
                 <input type="checkbox" id="node-input-offrandomoffset" placeholder="" style="width: 20px; margin: 0">
                 Randomise time within offset
             </label>
+        </div>
+    </div>
+    <div class="thingzi-geo">
+        <hr>
+        <h4>Location</h4>
+        <div class="form-row">
+            <label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
+            <input type="text" id="node-input-lat" placeholder="51.025">
+        </div>
+        <div class="form-row">
+            <label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
+            <input type="text" id="node-input-lon" placeholder="-1.4">
         </div>
     </div>
 </script>
