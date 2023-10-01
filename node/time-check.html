@@ -60,14 +60,6 @@
                 }
             }
 
-            var latLonValidator = function(node, v){
-                if (node.ontype === 'sun' || node.offtype === 'sun') {
-                    return (node.lat.length > 0 && !isNaN(node.lat) && node.lon.length > 0 && !isNaN(node.lon));
-                } else {
-                    return true;
-                }
-            }
-
             // START
             var startType = $('#node-input-ontype');
             var startTimeTod = $('#node-input-ontimetod');
@@ -137,6 +129,14 @@
             });
         }
     });
+
+    var latLonValidator = function(node, v){
+        if (node.ontype === 'sun' || node.offtype === 'sun') {
+            return (node.lat.length > 0 && !isNaN(node.lat) && node.lon.length > 0 && !isNaN(node.lon));
+        } else {
+            return true;
+        }
+    }
 </script>
 
 <script type="text/html" data-template-name="thingzi-time-check">
@@ -252,7 +252,7 @@
     </div>
     <div class="thingzi-geo">
         <hr>
-        <h4>Location</h4>
+        <h4>Sun Events</h4>
         <div class="form-row">
             <label for="node-input-lat"><i class="fa fa-globe"></i> Latitude</label>
             <input type="text" id="node-input-lat" placeholder="51.025">
