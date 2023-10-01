@@ -20,7 +20,7 @@ module.exports = function(RED) {
         "nadir"
     ];
 
-    RED.nodes.registerType('thingzi-time-check', function(config) {
+    RED.nodes.registerType('thingzi-activity', function(config) {
         RED.nodes.createNode(this, config);
         const node = this
 
@@ -37,6 +37,10 @@ module.exports = function(RED) {
         var fmt = 'D MMM, HH:mm:ss';
         this.lat = config.lat;
         this.lon = config.lon;
+        this.timerduration = config.timerduration * 1000;
+        this.extendtimer = config.extendtimer;
+        this.triggervalue = config.triggervalue;
+        this.limitactivity = config.limitactivity;
         this.passunchecked = config.passunchecked;
 
         // START config
@@ -52,6 +56,9 @@ module.exports = function(RED) {
         this.endvaluetype = config.offtimetodtype ?? 'str';
         this.endoffset = config.offoffset;
         this.endrandom = config.offrandomoffset;
+
+        // Timer
+        this.timer = null;
 
         // Show error message on the node and the node red console log
         function setError(text) {
@@ -150,17 +157,13 @@ module.exports = function(RED) {
             let endValueType = node.endvaluetype;
 
             // Use time now or allow override with a timestamp
-            let nowTime = msg.hasOwnProperty('time') ? moment(msg.time) : moment();
+            let nowTime = moment();
+            var value = msg.hasOwnProperty('payload') ? msg.payload.toString() : null;
 
-            // Different way to override current time using HH:mm
-            if (msg.hasOwnProperty('nowtime')) {
-                try {
-                    nowTime = parseTime(msg.nowtime);
-                } catch (error) {
-                    setError(`NOW: ${error}`);
-                    done();
-                    return;
-                }
+            // Make sure we act on messages with trigger value
+            if (value != node.triggervalue) {
+                done();
+                return;
             }
 
             // Is starttime in message using HH:mm
@@ -181,7 +184,9 @@ module.exports = function(RED) {
             let passCheck = false;
 
             // Is the day valid?
-            if (!weekdays[nowTime.isoWeekday() - 1]) {
+            if (node.limitactivity === false){
+                passCheck = weekdays[nowTime.isoWeekday() - 1] === true;
+            } else if (!weekdays[nowTime.isoWeekday() - 1]) {
                 passCheck = config.passunchecked === true;
             } else {
                 // Check the range
@@ -212,13 +217,28 @@ module.exports = function(RED) {
                 }
             }
 
+            // Initial update
             if (passCheck) {
-                node.send([msg, null]);
-                node.status({ fill: 'green', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
-            } else {
-                node.send([null, msg]);
-                node.status({ fill: 'grey', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
+                if (node.timer) {
+                    if (node.extendtimer) {
+                        clearTimeout(node.timer);
+                        node.timer = null;
+                    } else {
+                        done(); // no extension
+                        return;
+                    }
+                } else {
+                    node.send({ payload: "ON"});
+                    node.status({ fill: 'green', shape: 'dot', text: `@ ${nowTime.format(fmt)}` });
+                }
+
+                node.timer = setTimeout(function() {
+                    node.send({ payload: "OFF"});
+                    node.status({ fill: 'grey', shape: 'dot', text: `@ ${moment().format(fmt)}` });
+                    node.timer = null;
+                }, node.timerduration);
             }
+
             done();
         });
     });

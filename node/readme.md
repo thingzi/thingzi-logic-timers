@@ -11,6 +11,10 @@ Time check node for testing if a time (default current time) is within the set r
 ### Schedule Node
 Set events for a weekly schedule using a visual calendar.  Useful for schedules such as heating where you have a morning time, evening time and these may vary at the weekend.
 
+### Activity Node
+Handle time based activity events with timeouts and extensions.  Useful for controlling lights based on motion
+or similar.
+
 If you like/use this node, coffee makes me happy and it keeps me coding when i should be sleeping...
 
 <a href="https://www.buymeacoffee.com/thingzi" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 200px !important;" ></a>

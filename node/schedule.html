@@ -19,7 +19,7 @@
         outputLabels: ["schedule event"],
         icon: 'schedule.png',
         label: function () {
-            return this.name || 'schedule';
+            return this.name ?? 'schedule';
         },
         paletteLabel: 'schedule',
         oneditprepare: function () {

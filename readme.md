@@ -17,6 +17,12 @@ Set events for a weekly schedule using a visual calendar.  Useful for schedules 
 
 ![example usage](docs/images/schedule.png)
 
+### Activity Node
+Handle time based activity events with timeouts and extensions.  Useful for controlling lights based on motion
+or similar.
+
+![example usage](docs/images/activity.png)
+
 If you like/use this node, coffee makes me happy and it keeps me coding when i should be sleeping...
 
 <a href="https://www.buymeacoffee.com/thingzi" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 200px !important;" ></a>

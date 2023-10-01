@@ -53,7 +53,7 @@
         outputLabels: ["time event"],
         icon: "timer.png",
         label: function () {
-            return this.name || "timer";
+            return this.name ?? "timer";
         },
         paletteLabel: "timer",
         oneditprepare: function () {
@@ -104,8 +104,8 @@
                 default: 'msg',
                 typeField: $("#node-input-onpropertytype"),
                 types:['msg','flow','global']});
-            $("#node-input-onvaluetype").val(this.onvaluetype);
 
+            $("#node-input-onvaluetype").val(this.onvaluetype ?? 'str');
             $("#node-input-onvalue").typedInput({
                 default: 'str',
                 typeField: $("#node-input-onvaluetype"),
@@ -125,8 +125,8 @@
                 default: 'msg',
                 typeField: $("#node-input-offpropertytype"),
                 types:['msg','flow','global']});
-            $("#node-input-offvaluetype").val(this.offvaluetype);
 
+            $("#node-input-offvaluetype").val(this.offvaluetype ?? 'str');
             $("#node-input-offvalue").typedInput({
                 default: 'str',
                 typeField: $("#node-input-offvaluetype"),
@@ -142,15 +142,20 @@
             });
 
             // Show/hide Geo fields
+            updateGeo();
             $('.thingzi-geo-check').on('change', function(data) {
-                if ($('#node-input-ontype').val() === 'sun' || ($('#node-input-timerType').val() === 'onoff' && $('#node-input-offtype').val() === 'sun')) {
-                    $('.thingzi-geo').show();
-                } else {
-                    $('.thingzi-geo').hide();
-                }
+                updateGeo();
             });
         }
     });
+
+    var updateGeo = function() {
+        if ($('#node-input-ontype').val() === 'sun' || ($('#node-input-timerType').val() === 'onoff' && $('#node-input-offtype').val() === 'sun')) {
+            $('.thingzi-geo').show();
+        } else {
+            $('.thingzi-geo').hide();
+        }
+    }
 
     var latLonValidator = function(node, v){
         if (node.ontype === 'sun' || (node.timerType === 'onoff' && node.offtype === 'sun')) {
@@ -165,6 +170,13 @@
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-timerType"><i class="fa fa-cog"></i> Type</label>
+        <select id="node-input-timerType" class="thingzi-geo-check">
+            <option value="onoff">On/Off</option>
+            <option value="trigger">Trigger</option>
+        </select>
     </div>
     <div class="form-row">
         <label for="node-input-lat"><i class="fa fa-calendar"></i> Schedule</label>
@@ -187,13 +199,6 @@
 	<div class="form-row thingzi-geo">
 		<label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
 		<input type="text" id="node-input-lon" placeholder="-1.4">
-    </div>
-    <div class="form-row">
-        <label for="node-input-timerType"><i class="fa fa-cog"></i> Type</label>
-        <select id="node-input-timerType" class="thingzi-geo-check">
-            <option value="onoff">On/Off</option>
-            <option value="trigger">Trigger</option>
-        </select>
     </div>
     <div class="form-row">
         <label style="margin-left: 100px; width: 70%">

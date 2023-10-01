@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    RED.nodes.registerType('thingzi-time-check', {
+    RED.nodes.registerType('thingzi-activity', {
         category: 'function',
         color: '#9ccff5',
         defaults: {
@@ -10,6 +10,18 @@
             lon: {value: '', validate: function(v){
                 return latLonValidator(this,v) ;
             }},
+
+            // Activity timer duration in seconds
+            timerduration: {value: 60, required: true, validate: function(v){ 
+                return v >= 0; 
+            }},
+
+            // Activity trigger
+            triggervaluetype: {value: 'str'},
+            triggervalue: {value: 'ON'},
+
+            // Activity trigger
+            extendtimer: {value: true},
 
             // ON config params
             ontype: {value: 'tod'},
@@ -40,18 +52,29 @@
             sat: {value: true},
             sun: {value: true},
 
+            // Limit activity range
+            limitactivity: {value: false},
+
             // Pass on unchecked days
             passunchecked: {value: false},
         },
         inputs: 1,
-        outputs: 2,
-        outputLabels: ["check passed","check failed"],
-        icon: "time-check.png",
+        outputs: 1,
+        outputLabels: ["activity"],
+        icon: "activity.png",
         label: function () {
-            return this.name ?? "time check";
+            return this.name ?? "activity";
         },
-        paletteLabel: "time check",
+        paletteLabel: "activity",
         oneditprepare: function () {
+
+            // TRIGGER
+            $("#node-input-triggervaluetype").val(this.triggervaluetype ?? 'str');
+            $("#node-input-triggervalue").typedInput({
+                default: 'str',
+                typeField: $("#node-input-triggervaluetype"),
+                types:['str','num','bool']
+            });
 
             // START
             var startType = $('#node-input-ontype');
@@ -120,14 +143,29 @@
             $('.thingzi-geo-check').on('change', function(data) {
                 updateGeo();
             });
+
+            // Show/hide time range
+            updateLimit();
+            $('#node-input-limitactivity').on('change', function(data) {
+                updateLimit();
+                updateGeo();
+            });
         }
     });
 
     var updateGeo = function() {
-        if ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun') {
+        if ($('#node-input-limitactivity').val() && ($('#node-input-ontype').val() === 'sun' || $('#node-input-offtype').val() === 'sun')) {
             $('.thingzi-geo').show();
         } else {
             $('.thingzi-geo').hide();
+        }
+    }
+
+    var updateLimit = function() {
+        if ($('#node-input-limitactivity').prop("checked")) {
+            $('.thingzi-limitactivity').show()
+        } else {
+            $('.thingzi-limitactivity').hide()
         }
     }
 
@@ -140,10 +178,25 @@
     }
 </script>
 
-<script type="text/html" data-template-name="thingzi-time-check">
+<script type="text/html" data-template-name="thingzi-activity">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-timerduration">Timer (seconds)</label>
+        <input type="number" id="node-input-timerduration">
+    </div>
+    <div class="form-row">
+        <label title="if ticked and triggers occur while the timer is running, the timer is silently restarted." style="margin-left: 100px; width: 70%">
+            <input type="checkbox" id="node-input-extendtimer" style="width: 20px; margin: 0">
+            <span>Extend timer on new events</span>
+        </label>
+    </div>
+    <div class="form-row">
+        <label title="value passed in <code>payload</code> which triggers the activity" for="node-input-triggervalue">Trigger Value</label>
+        <input type="text" id="node-input-triggervalue" style="width:70%">
+        <input type="hidden" id="node-input-triggervaluetype">
     </div>
     <div class="form-row">
         <label title="days to check, by default not ticked days will fail the check" for="node-input-lat"><i class="fa fa-calendar">
@@ -162,9 +215,15 @@
         </table>
     </div>
     <div class="form-row">
+        <label title="if ticked, triggers can be limited to a specific time range e.g. night time" style="margin-left: 100px; width: 70%">
+            <input type="checkbox" id="node-input-limitactivity" style="width: 20px; margin: 0">
+            <span>Limit time range</span>
+        </label>
+    </div>
+    <div class="form-row thingzi-limitactivity">
         <label title="if ticked, when a day is unchecked the test will always pass" style="margin-left: 100px; width: 70%">
             <input type="checkbox" id="node-input-passunchecked" style="width: 20px; margin: 0">
-            <span>Pass test on unchecked days</span>
+            <span>Ignore time range on unchecked days</span>
         </label>
     </div>
     <div class="form-row thingzi-geo">
@@ -175,7 +234,7 @@
 		<label for="node-input-lon"><i class="fa fa-globe"></i> Longitude</label>
 		<input type="text" id="node-input-lon" placeholder="-1.4">
     </div>
-    <div>
+    <div class="thingzi-limitactivity">
         <hr>
         <h4>Start</h4>
         <div class="form-row">
@@ -198,9 +257,9 @@
                 <option value="sunsetStart">Sunset Start</option>
                 <option value="sunset">Sunset</option>
             </select>
-        </div>    
+        </div>
         <div class="form-row thingzi-starttype thingzi-starttype-tod">
-            <label title="Simple time string e.g. HH::mm.  Can also value from flow or global context" for="node-input-ontimetod">
+            <label for="node-input-ontimetod" title="Simple time string e.g. HH::mm.  Can also value from flow or global context">
                 Time (HH:mm)
             </label>
             <input type="text" id="node-input-ontimetod" style="width: 70%"/>
@@ -217,7 +276,7 @@
             </label>
         </div>
     </div>
-    <div>
+    <div class="thingzi-limitactivity">
         <hr>
         <h4>End</h4>
         <div class="form-row">
@@ -242,10 +301,10 @@
             </select>
         </div>
         <div class="form-row thingzi-endtype thingzi-endtype-tod">
-            <label title="Simple time string e.g. HH::mm.  Can also value from flow or global context" for="node-input-offtimetod">
-                Time (24hr)
+            <label for="node-input-offtimetod" title="Simple time string e.g. HH::mm.  Can also value from flow or global context" >
+                Time (HH:mm)
             </label>
-            <input type="text" id="node-input-offtimetod" style="width: 70%"/>
+            <input type="text" id="node-input-offtimetod" style="width: 70%" placeholder="HH:mm"/>
             <input type="hidden" id="node-input-offtimetodtype">
         </div>
         <div class="form-row thingzi-endtype thingzi-endtype-sun thingzi-endtype-tod">
@@ -261,20 +320,13 @@
     </div>
 </script>
 
-<script type="text/html" data-help-name="thingzi-time-check">
-    <p>Test if the current or supplied time is within the given range.</p>
-    <p>
-        If the time is within the range, the message is forwarded to the next node via the primary output.
-        if not then the message is sent via the secondary output.  The time to check can also be overridden 
-        by supplying a timestamp via the 'time' topic or a simple HH;mm string via the 'nowtime' topic.
-    </p>
+<script type="text/html" data-help-name="thingzi-activity">
+    <p>Handle an activity event and start a timer with optional extension for new events.  Useful for motion events and lighting.</p>
 
     <h3>Inputs</h3>
     <dl class="message-properties">
-        <dt class="optional">time (optional) <span class="property-type">timestamp</span></dt>
-        <dd> A timestamp to check against instead of the current time, if not set the current time now will be used.</dd>
-        <dt class="optional">nowtime (optional) <span class="property-type">string</span></dt>
-        <dd> Simple time string to check against instead of the current time e.g. HH:mm.</dd>
+        <dt class="optional">payload <span class="property-type">string</span></dt>
+        <dd> Message that triggers the activity.  Must match the value set in the node properties.</dd>
         <dt class="optional">starttime (optional) <span class="property-type">string</span></dt>
         <dd> Simple time string to use instead of the start time e.g. HH:mm.  This forces "time of day" mode for the start time</dd>
         <dt class="optional">endtime (optional) <span class="property-type">string</span></dt>
@@ -283,25 +335,25 @@
 
     <h3>Outputs</h3>
     <ol class="node-ports">
-        <li>Check Passed
+        <li>Activty
             <dl class="message-properties">
-                <dt>msg object</dt>
-                <dd> Entire message that was sent to input (if time check passed).</dd>
-            </dl>
-        </li>
-        <li>Check Failed
-            <dl class="message-properties">
-                <dt>msg object</dt>
-                <dd> Entire message that was sent to input (if time check failed).</dd>
+                <dt>payload <span class="property-type">string</span></dt>
+                <dd> Activity state <code>ON</code> or <code>OFF</code></dd>
             </dl>
         </li>
     </ol>
 
     <h3>Details</h3>
-    <p>Time check ranges can be fixed times or sun events, which are useful for knowing
-    when to trigger lights without dedicated sensors.  When using sun events the node will 
-    try to use your lat/long position using the IP address of your ISP which is usually 
-    close enough.  You can override this if you wish.</p>
+    <p>Ideal for usage where motion sensors drive lights or similar. Listens for a trigger
+    message to begin the activity.  When the trigger is received ON is sent and the timer starts.  
+    When the timer ends OFF is sent.</p>
+
+    <p>Optional: If "Extend timer on new events" is enabled and triggers occur while 
+    the timer is running, the timer is silently extended.</p>
+    
+    <p>Time ranges can optionally be used to limit activity within a specified range. e.g. "only
+    start activity when dark".  When using sun events the node will try to use your lat/long position 
+    using the IP address of your ISP which is usually close enough.  You can override this if you wish.</p>
 
     <p>Times entered as text must be in 24hr format <code>HH:mm</code> (or military time in US).  e.g. 18:45 or 09:50.  
     Note that seconds are also supported e.g. 11:30:45</p>

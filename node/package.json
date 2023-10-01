@@ -1,6 +1,6 @@
 {
   "name": "thingzi-logic-timers",
-  "version": "1.2.5",
+  "version": "1.4",
   "description": "Easy to use time based nodes with clean design",
   "bundleDependencies": false,
   "dependencies": {
@@ -9,7 +9,7 @@
     "suncalc": "^1.8.0",
     "needle": "^3.0.0"
   },
-  "keywords": [ "node-red", "timer", "schedule", "time", "calendar", "trigger" ],
+  "keywords": [ "node-red", "timer", "schedule", "time", "calendar", "trigger", "motion", "chrono" ],
   "author": "Bryan Black <bry@thingzi.net>",
   "license": "MIT",
   "node-red" : {
@@ -17,7 +17,8 @@
     "nodes": {
         "timer": "timer.js",
         "time-check": "time-check.js",
-        "schedule": "schedule.js"
+        "schedule": "schedule.js",
+        "activity": "activity.js"
     }
   },
   "engines": {
