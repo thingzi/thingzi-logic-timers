@@ -40,6 +40,7 @@ module.exports = function(RED) {
         this.timerduration = config.timerduration * 1000;
         this.extendtimer = config.extendtimer;
         this.triggervalue = config.triggervalue;
+        this.resetvalue = config.resetvalue;
         this.limitactivity = config.limitactivity;
         this.passunchecked = config.passunchecked;
 
@@ -163,7 +164,7 @@ module.exports = function(RED) {
             if (msg.hasOwnProperty('disable')) {
                 node.disabled = msg.disable.toString() === 'ON';
                 if (node.disabled) {
-                    if (node.extendtimer) {
+                    if (node.timer) {
                         clearTimeout(node.timer);
                         node.timer = null;
                     }
@@ -181,6 +182,15 @@ module.exports = function(RED) {
             // Use time now or allow override with a timestamp
             let nowTime = moment();
             var value = msg.hasOwnProperty('payload') ? msg.payload.toString() : null;
+
+            // Handle reset
+            if (msg.hasOwnProperty('reset') || (node.resetvalue !== '' && value === node.resetvalue)) {
+                if (node.timer) {
+                    clearTimeout(node.timer);
+                    node.timer = null;
+                }
+                node.status({});
+            }
 
             // Make sure we act on messages with trigger value
             if (value != node.triggervalue) {

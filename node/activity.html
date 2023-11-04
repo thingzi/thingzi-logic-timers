@@ -19,8 +19,8 @@
             // Activity trigger
             triggervaluetype: {value: 'str'},
             triggervalue: {value: 'ON'},
-
-            // Activity trigger
+            resetvaluetype: {value: 'str'},
+            resetvalue: {value: null},
             extendtimer: {value: true},
 
             // ON config params
@@ -88,6 +88,14 @@
             $("#node-input-triggervalue").typedInput({
                 default: 'str',
                 typeField: $("#node-input-triggervaluetype"),
+                types:['str','num','bool']
+            });
+
+            // RESET
+            $("#node-input-resetvaluetype").val(this.resetvaluetype ?? 'str');
+            $("#node-input-resetvalue").typedInput({
+                default: 'str',
+                typeField: $("#node-input-resetvaluetype"),
                 types:['str','num','bool']
             });
 
@@ -196,6 +204,11 @@
         <label title="value passed in <code>payload</code> which triggers the activity" for="node-input-triggervalue">Trigger Value</label>
         <input type="text" id="node-input-triggervalue" style="width:70%">
         <input type="hidden" id="node-input-triggervaluetype">
+    </div>
+    <div class="form-row">
+        <label title="value passed in <code>payload</code> which will reset the trigger" for="node-input-resetvalue">Reset Value</label>
+        <input type="text" id="node-input-resetvalue" style="width:70%" placeholder="Leave empty for no reset">
+        <input type="hidden" id="node-input-resetvaluetype">
     </div>
     <div class="form-row">
         <label title="days to check, by default not ticked days will fail the check" for="node-input-lat"><i class="fa fa-calendar">
@@ -332,6 +345,9 @@
         <dd> Message that triggers the activity.  Must match the value set in the node properties.</dd>
         <dt class="optional">disable <span class="property-type">string</span></dt>
         <dd> Disable the activity, even when in progress, can be <code>ON</code> or <code>OFF</code>. Useful if you need to override behaviour e.g. via a switch</dd>
+        <dt class="optional">reset <span class="property-type">string</span></dt>
+        <dd> Reset any active timer. Message content is ignored.</dd>
+
         <dt class="optional">starttime (optional) <span class="property-type">string</span></dt>
         <dd> Simple time string to use instead of the start time e.g. HH:mm.  This forces "time of day" mode for the start time</dd>
         <dt class="optional">endtime (optional) <span class="property-type">string</span></dt>

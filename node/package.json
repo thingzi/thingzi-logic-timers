@@ -1,6 +1,6 @@
 {
   "name": "thingzi-logic-timers",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Easy to use time based nodes with clean design",
   "bundleDependencies": false,
   "dependencies": {
@@ -9,7 +9,7 @@
     "suncalc": "^1.8.0",
     "needle": "^3.0.0"
   },
-  "keywords": [ "node-red", "timer", "schedule", "time", "calendar", "trigger", "motion", "chrono" ],
+  "keywords": [ "node-red", "timer", "schedule", "time", "calendar", "trigger", "motion", "chrono", "presence", "sensor", "activity", "timeout" ],
   "author": "Bryan Black <bry@thingzi.net>",
   "license": "MIT",
   "node-red" : {

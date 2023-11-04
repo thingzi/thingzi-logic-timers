@@ -18,7 +18,7 @@ Set events for a weekly schedule using a visual calendar.  Useful for schedules 
 ![example usage](https://raw.githubusercontent.com/thingzi/thingzi-logic-timers/1.4.2/docs/images/schedule.png)
 
 ### Activity Node
-Handle time based activity events with timeouts and extensions.  Useful for controlling devices based on presence sensors or similar use cases.
+Handle time based activity events with timeouts, extensions & resets.  Useful for controlling devices based on presence sensors or similar use cases.
 
 ![example usage](https://raw.githubusercontent.com/thingzi/thingzi-logic-timers/1.4.2/docs/images/activity.png)
 
