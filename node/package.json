@@ -1,6 +1,6 @@
 {
   "name": "thingzi-logic-timers",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Easy to use time based nodes with clean design",
   "bundleDependencies": false,
   "dependencies": {

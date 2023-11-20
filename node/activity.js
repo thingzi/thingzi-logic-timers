@@ -47,14 +47,14 @@ module.exports = function(RED) {
         // START config
         this.starttype = config.ontype;
         this.startvalue = config.ontype === 'sun' ? config.ontimesun : config.ontimetod;
-        this.startvaluetype = config.ontimetodtype ?? 'str';
+        this.startvaluetype = config.ontimetodtype || 'str';
         this.startoffset = config.onoffset;
         this.startrandom = config.onrandomoffset;
 
         // END config
         this.endtype = config.offtype;
         this.endvalue = config.offtype === 'sun' ? config.offtimesun : config.offtimetod;
-        this.endvaluetype = config.offtimetodtype ?? 'str';
+        this.endvaluetype = config.offtimetodtype || 'str';
         this.endoffset = config.offoffset;
         this.endrandom = config.offrandomoffset;
 
