@@ -14,4 +14,4 @@ metadata:
 spec:
   type: nodered
   lifecycle: production
-  owner: group:nodered
+  owner: group:thingzi/nodered
