@@ -56,7 +56,7 @@
                     if (!(e.end != undefined && e.end.dow != undefined && e.end.mod != undefined))
                         return;
 
-                    eventData = {
+                    var eventData = {
                         id: node.nextId(),
                         title: '',
                         start: node.toMoment(e.start),

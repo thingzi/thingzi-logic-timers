@@ -23,14 +23,14 @@ module.exports = function (RED) {
 
         // Get the current state
         this.getState = function () {
-            var now = moment();;
+            var now = moment();
             var dow = now.day();
             var mow = (dow * minutesInDay) + (now.hours() * 60) + now.minutes();
             var match = false;
             
             for (var event of node.events) {
                 var startMow = (event.start.dow * minutesInDay) + event.start.mod;
-                var endMow = (event.end.dow * minutesInDay) + + event.end.mod;
+                var endMow = (event.end.dow * minutesInDay) + event.end.mod;
                 if (endMow === 0) endMow = 7 * minutesInDay; // Handle edge case
                 if (mow >= startMow  && mow < endMow) {
                     match = true;

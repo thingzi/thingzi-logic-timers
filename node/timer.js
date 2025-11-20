@@ -136,7 +136,12 @@ module.exports = function(RED) {
             event.calculateTime = function(date) {
                 if (event.type === 'sun') {
                     const sunCalcTimes = suncalc.getTimes(date.toDate(), config.lat, config.lon);
-                    let sc = sunCalcTimes[sunTimes[sunTimes.indexOf(event.timesun)]];
+                    const sunTimeIndex = sunTimes.indexOf(event.timesun);
+                    if (sunTimeIndex === -1) {
+                        event.error = 'Invalid sun time \'' + event.timesun + '\'';
+                        return null;
+                    }
+                    let sc = sunCalcTimes[sunTimes[sunTimeIndex]];
                     if (sc && moment(sc).isValid()) {
                         event.moment = moment(sc);
                     } else {
@@ -179,7 +184,7 @@ module.exports = function(RED) {
                 event.clear();
 
                 // Get the next day or exit if there is not one
-                let date = getNextDate(new moment());
+                let date = getNextDate(moment());
                 if (!date) {
                     return;
                 }
@@ -198,7 +203,7 @@ module.exports = function(RED) {
                     }
                 }
 
-                // Add random offset & handle case where new time is still within the offset
+                // Randomize time within offset range & handle case where new time is still within the offset
                 if (event.offset && event.randomoffset) {
                     let baseTime = moment(event.moment).subtract(event.offset, 'minutes');
                     if (now.isSameOrAfter(baseTime)) {
@@ -207,6 +212,7 @@ module.exports = function(RED) {
                             return;
                         }
                     }
+                    // Randomize: subtract random amount (0 to offset) to get time between base and base+offset
                     event.moment.subtract(event.offset * Math.random(), 'minutes');
                 }
 
@@ -273,7 +279,7 @@ module.exports = function(RED) {
             }
 
             // Work out next date
-            let nextDate = new moment(date);
+            let nextDate = moment(date);
             while (!weekdays[nextDate.isoWeekday() - 1]) {
                 nextDate.add(1, 'days');
             }

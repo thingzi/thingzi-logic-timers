@@ -107,7 +107,11 @@ module.exports = function(RED) {
             var eventTime = undefined;
             if (type === 'sun') {
                 const sunCalcTimes = suncalc.getTimes(new Date(), node.lat, node.lon);
-                var sc = sunCalcTimes[sunTimes[sunTimes.indexOf(value)]];
+                const sunTimeIndex = sunTimes.indexOf(value);
+                if (sunTimeIndex === -1) {
+                    throw `Invalid sun time '${value}'`;
+                }
+                var sc = sunCalcTimes[sunTimes[sunTimeIndex]];
                 if (sc && moment(sc).isValid()) {
                     eventTime = moment(sc);
                 } else {
